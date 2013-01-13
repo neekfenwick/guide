@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>mydijits.GuideManager Unit Test</title>
+
+	<style>
+		@import "../../dojo/resources/dojo.css";
+		@import "../../util/doh/robot/robot.css";
+		@import "../guide/resources/GuideManager.css";
+		/*@import "../css/dijitTests.css";*/
+		
+		.guideTarget {
+			padding: 10px;
+			background: palegoldenrod;
+			border: 2px solid black;
+			max-width: 10em;
+		}
+	</style>
+
+	<!-- required: the default dijit theme: -->
+	<link id="themeStyles" rel="stylesheet" href="../../dijit/themes/claro/claro.css">
+
+	<!-- required: dojo.js -->
+
+	<script type="text/javascript" src="../../dojo/dojo.js"
+		data-dojo-config="async: true, isDebug: true, selectorEngine: 'acme'"></script>
+
+	<script type="text/javascript">
+		var testWidget = "mydijits/guide/GuideManager";
+		
+		require([
+			"dojo/dom",
+			"dojo/on",
+			"dojo/parser",
+			"mydijits/guide/GuideManager",
+			"dojo/domReady!"
+		], function(dom, on, parser, GuideManager) {
+			parser.parse();
+
+			function startMarkup() {
+				guide.start();
+			}
+			var startProg = function() {
+				var g = new GuideManager({
+					steps: [
+						{ html: 'I am the first step', target: 'one' },
+						{ html: 'I am the second step', target: dom.byId('two') },
+						{ html: 'I am the third step', target: 'three' },
+						{ html: 'I am the fourth step', target: dom.byId('four') },
+					]
+				})
+				g.startup();
+				
+				g.start();
+			}
+			on(dom.byId('startMarkup'), 'click', startMarkup);
+			on(dom.byId('startProg'), 'click', startProg);
+		})
+
+	</script>
+</head>
+<body class="claro">
+
+	<button id="startMarkup">Start the guide from markup!</button>
+	<button id="startProg">Start the guide created programatically!</button>
+
+	<h1>A big heading at the top</h1>
+	<div class="guideTarget" id="one">Something here</div>
+	<h2>A table of pointless data</h2>
+	<table><tbody>
+			<tr><td>one</td><td>two</td><td>three</td></tr>
+			<tr><td>one</td><td>two</td><td>three</td></tr>
+			<tr><td>one</td><td>two</td><td>three</td></tr>
+	</tbody></table>
+	<div class="guideTarget" id="two">And here</div>
+	<div class="guideTarget" style="float: right" id="three">And over here</div>
+	<div class="guideTarget" style="clear: both" id="four">We rock</div>
+	
+	<div data-dojo-type="mydijits/guide/GuideManager" data-dojo-id="guide"
+		 data-dojo-props="targets: [ 'one', 'two', 'three', 'four' ]">
+		<div xxxdata-dojo-type="mydijits/Guide"
+			 data-dojo-props="buttons: [ 'ok' ]">This is the first thing.</div>
+		<div xxxdata-dojo-type="mydijits/Guide"
+			 data-dojo-props="buttons: [ 'ok' ], actions: [ 'next' ]">This is the next thing.</div>
+		<div xxxdata-dojo-type="mydijits/Guide"
+			 data-dojo-props="buttons: [ 'ok' ]">Then this thing over here.</div>
+		<div xxxdata-dojo-type="mydijits/Guide"
+			 data-dojo-props="buttons: [ 'ok' ]">Have a banana.</div>
+	</div>
+</body>
+</html>

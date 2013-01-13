@@ -1,0 +1,26 @@
+.dojoxGuideManager {
+	display: none;
+}
+.dijitTooltipDialog.dojoxGuidePopup {
+	outline: none;
+	z-index: 2000;
+}
+.dojoxGuideUnderlay {
+	opacity: 50%;
+	z-index: 1999;
+}
+.dojoxGuidePopup .dojoxGuideStepContainer {
+}
+.dojoxGuidePopup .dojoxGuideButtonBar {
+	border-top: lightblue;
+	text-align: right;
+}
+
+.dojoxGuidePopup .dojoxGuideButtonBar .dojoxGuideAction {
+	color: blue;
+	cursor: pointer;
+	margin-left: 5px;
+}
+.dojoxGuidePopup .dojoxGuideButtonBar .dojoxGuideAction:hover {
+	text-decoration: underline;
+}
