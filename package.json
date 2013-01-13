@@ -1,0 +1,22 @@
+{
+  "name": "guide",
+  "mappings": {
+    "dojo": "https://github.com/dojo/dojo",
+    "dijit": "https://github.com/dojo/dijit"
+  },
+  "description": "Web page guide for highlighting parts of the GUI",
+  "licenses": [
+     {
+         "type": "BSD",
+         "url": "http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L13"
+     }
+  ],
+  "keywords": ["Guide"],
+  "homepage": "http://github.com/neekfenwick/guide",
+  "dependencies": {
+    "dojo": "1.7.0",
+    "dijit": "1.7.0"
+  },
+  "main": "./guide",
+  "icon": "https://raw.github.com/neekfenwick/guide/master/resources/logo.png"
+}

@@ -6,7 +6,7 @@
 	<style>
 		@import "../../dojo/resources/dojo.css";
 		@import "../../util/doh/robot/robot.css";
-		@import "../guide/resources/GuideManager.css";
+		@import "../resources/GuideManager.css";
 		/*@import "../css/dijitTests.css";*/
 		
 		.guideTarget {
@@ -26,13 +26,13 @@
 		data-dojo-config="async: true, isDebug: true, selectorEngine: 'acme'"></script>
 
 	<script type="text/javascript">
-		var testWidget = "mydijits/guide/GuideManager";
+		var testWidget = "guide/GuideManager";
 		
 		require([
 			"dojo/dom",
 			"dojo/on",
 			"dojo/parser",
-			"mydijits/guide/GuideManager",
+			"guide/GuideManager",
 			"dojo/domReady!"
 		], function(dom, on, parser, GuideManager) {
 			parser.parse();
@@ -76,16 +76,12 @@
 	<div class="guideTarget" style="float: right" id="three">And over here</div>
 	<div class="guideTarget" style="clear: both" id="four">We rock</div>
 	
-	<div data-dojo-type="mydijits/guide/GuideManager" data-dojo-id="guide"
+	<div data-dojo-type="guide/GuideManager" data-dojo-id="guide"
 		 data-dojo-props="targets: [ 'one', 'two', 'three', 'four' ]">
-		<div xxxdata-dojo-type="mydijits/Guide"
-			 data-dojo-props="buttons: [ 'ok' ]">This is the first thing.</div>
-		<div xxxdata-dojo-type="mydijits/Guide"
-			 data-dojo-props="buttons: [ 'ok' ], actions: [ 'next' ]">This is the next thing.</div>
-		<div xxxdata-dojo-type="mydijits/Guide"
-			 data-dojo-props="buttons: [ 'ok' ]">Then this thing over here.</div>
-		<div xxxdata-dojo-type="mydijits/Guide"
-			 data-dojo-props="buttons: [ 'ok' ]">Have a banana.</div>
+		<div>This is the first thing.</div>
+		<div data-dojo-props="actions: [ 'next' ]">This is the next thing.</div>
+		<div>Then this thing over here.</div>
+		<div>Have a banana.</div>
 	</div>
 </body>
 </html>
