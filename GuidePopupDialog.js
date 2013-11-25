@@ -1,3 +1,4 @@
+/*jshint quotmark:false */
 define([
 	"dojo/_base/declare",
 	"dojo/_base/array",
@@ -12,7 +13,7 @@ define([
 	"dojo/query",
 	"dijit/popup",
 	"dijit/TooltipDialog"
-], function(declare, array, lang, win,	domAttr, domClass, domConstruct, domStyle, dom, on, query, popup, TooltipDialog) {
+], function (declare, array, lang, win,	domAttr, domClass, domConstruct, domStyle, dom, on, query, popup, TooltipDialog) {
 	
 	return declare(TooltipDialog, {
 		
@@ -23,7 +24,7 @@ define([
 			{ label: 'Cancel', action: 'cancel' }
 		],
 	
-		postCreate: function() {
+		postCreate: function () {
 			this.inherited(arguments);
 			
 			// We maintain two elements in our ContainerNode:
@@ -40,7 +41,7 @@ define([
 			
 			// We have a set of standard actions we can support
 			this.actionNode = [];
-			array.forEach(this.actions, lang.hitch(this, function(action) {
+			array.forEach(this.actions, lang.hitch(this, function (action) {
 				
 				var actNode = domConstruct.create('span', {
 					'class': 'dojoxGuideAction',
@@ -49,27 +50,27 @@ define([
 				}, this.buttonBar, 'last');
 
 				// handle click on the action, e.g. 'prev' calls this.prev()
-				this.own(actNode, on(actNode, 'click', lang.hitch(this, function(e) {
+				this.own(actNode, on(actNode, 'click', lang.hitch(this, function (e) {
 					// Tell the parent that an action was clicked.
-					this.parent.act(e.target.getAttribute('data-action'))
-				})))
+					this.parent.act(e.target.getAttribute('data-action'));
+				})));
 				
 				// remember node for later just in case
 				this.actionNode[action.action] = actNode;
-			}))
+			}));
 		},
 		// Makes actions visible or invisible
 		// e.g. this.set('actions', [ 'prev', 'next'])
-		displayActions: function(requiredActions) {
-			array.forEach(this.actions, lang.hitch(this, function(action) {
+		displayActions: function (requiredActions) {
+			array.forEach(this.actions, lang.hitch(this, function (action) {
 
 				domStyle.set(this.actionNode[action.action], 'display',
-					(requiredActions.indexOf(action.action) != -1) ? 'inline-block':'none');
+					(requiredActions.indexOf(action.action) !== -1) ? 'inline-block':'none');
 
-			}))
+			}));
 		},
-		prev: function() {
+		prev: function () {
 			
 		}
-	})
-})
+	});
+});

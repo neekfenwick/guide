@@ -1,3 +1,4 @@
+/*jshint quotmark:false */
 define([
 	"dojo/_base/declare",
 	"dojo/_base/array",
@@ -14,7 +15,7 @@ define([
 	"dojo/query",
 	"dijit/popup",
 	"./GuidePopupDialog"
-], function(declare, array, lang, winBase, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
+], function (declare, array, lang, winBase, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
 	json, query, popup, GuidePopupDialog) {
 	
 	return declare(null, {
@@ -60,7 +61,7 @@ define([
 		
 		_PopupClass: GuidePopupDialog,
 		
-		constructor: function(/*Object*/params, /*DomNode|string*/node) {
+		constructor: function (/*Object*/params, /*DomNode|string*/node) {
 			lang.mixin(this, params);
 			// If we were created from markup or programatically with a node, we
 			//  can just use that node.
@@ -76,7 +77,11 @@ define([
 			domStyle.set(this.domNode, 'display', 'none');
 		},
 
-		startup: function() {
+		startup: function () {
+			this._initSteps();
+		},
+
+		_initSteps: function () {
 			var self = this;
 
 			/* If we were initialised with a javascript object of steps, create them here.
@@ -87,39 +92,41 @@ define([
 			if (this.steps && lang.isObject(this.steps)) {
 				self._stepNodes = [];
 				self.targets = [];
-				array.forEach(this.steps, function(stepInfo) {
+				array.forEach(this.steps, function (stepInfo) {
 					// Create a div for this step and stash it under our domNode
 					self._stepNodes.push(domConstruct.create('div', {
 						innerHTML: stepInfo.html
-					}, self.stepContainerNode, 'last'))
+					}, self.stepContainerNode, 'last'));
 					// Remember the target id in a handy array
-					self.targets.push(typeof stepInfo.target == 'string' ? dom.byId(stepInfo.target) : stepInfo.target);
-				})
+					self.targets.push(typeof stepInfo.target === 'string' ? dom.byId(stepInfo.target) : stepInfo.target);
+				});
 			} else {
 				/* Presume we are initialising from markup. */
 
 				// Go through this.targets and pick up each step element.
 				// These must correspond with the 'ids' array we were constructed with.
 				self._stepNodes = [];
-				query('>', this.domNode).forEach(function(node) {
+				query('>', this.domNode).forEach(function (node) {
 					self._stepNodes.push(node);
-				})
+				});
 				
-				if (self._stepNodes.length != self.targets.length) {
+				if (self._stepNodes.length !== self.targets.length) {
 					console.error("Number of stepNodes " + self._stepNodes.length +
 						" must equal number of targetIds " + self.targetIds.length + "!");
 				}
 			}
 		},
 		
-		start: function() {
+		start: function () {
 			this._guideNum = 0;
 			this.makeActive();
 			
 			this.showCurrent();
 		},
-		makeActive: function() {
-			if (this._active) return;
+		makeActive: function () {
+			if (this._active) {
+				return;
+			}
 			
 			// Create an underlay div we will use when necessary
 			this._underlay = domConstruct.create('div', {
@@ -135,15 +142,17 @@ define([
 			
 			this._active = true;
 		},
-		makeInactive: function() {
-			if (!this._active) return;
+		makeInactive: function () {
+			if (!this._active) {
+				return;
+			}
 
 			// Move any current popup contents out, because we're about to destroy the popup.
 			var curChildren = this._popup.getChildren();
 			if (curChildren && curChildren.length > 0) {
-				array.forEach(curChildren, function(node) {
+				array.forEach(curChildren, function (node) {
 					domConstruct.place(node, this.domNode, 'last');
-				})
+				});
 			}
 
 			// Destroy our on screen presence so we don't consume resources while inactive.
@@ -159,7 +168,7 @@ define([
 		// Inactive steps are kept under our domnode, with display: 'none'
 		// Active step is placed in our tooltip dialog and arranged next to its
 		// target node.
-		showCurrent: function() {
+		showCurrent: function () {
 			// Hide all steps except the current one
 			for (var i = 0 ; i < this._stepNodes.length ; i ++) {
 				if (i === this._guideNum) {
@@ -192,7 +201,7 @@ define([
 						/* Sensible default actions */
 						(this._guideNum === 0) ? [ 'next' ] :
 						(this._guideNum === (this._stepNodes.length - 1)) ? [ 'ok' ] :
-						[ 'prev', 'next' ]
+						[ 'prev', 'next' ];
 //				if (actions) {
 //					actions = json.parse(actions);
 //				} else {
@@ -203,36 +212,36 @@ define([
 					popup: this._popup,
 					around: target,
 					orient: orientation
-				})
+				});
 			}
 		},
-		act: function(action) {
+		act: function (action) {
 			console.log("Action " + action + " was clicked");
 			switch (action) {
-				case 'next':
-					if (this._guideNum === (this._stepNodes.length - 1)) {
-						console.error("Already on last step, cannot go next.");
-						return;
-					}
-					this._guideNum ++;
-					this.showCurrent();
-					break;
-					
-				case 'prev':
-					if (this._guideNum === 0) {
-						console.error("Already on first step, cannot go next.");
-						return;
-					}
-					this._guideNum --;
-					this.showCurrent();
-					break;
-					
-				case 'ok':
-				case 'cancel':
-					// The GuideManager is being dismissed.
-					this.makeInactive();
-					break;
+			case 'next':
+				if (this._guideNum === (this._stepNodes.length - 1)) {
+					console.error("Already on last step, cannot go next.");
+					return;
+				}
+				this._guideNum ++;
+				this.showCurrent();
+				break;
+				
+			case 'prev':
+				if (this._guideNum === 0) {
+					console.error("Already on first step, cannot go next.");
+					return;
+				}
+				this._guideNum --;
+				this.showCurrent();
+				break;
+				
+			case 'ok':
+			case 'cancel':
+				// The GuideManager is being dismissed.
+				this.makeInactive();
+				break;
 			}
 		}
-	})
-})
+	});
+});
