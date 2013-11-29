@@ -76,12 +76,11 @@
 	<div class="guideTarget" style="float: right" id="three">And over here</div>
 	<div class="guideTarget" style="clear: both" id="four">We rock</div>
 	
-	<div data-dojo-type="guide/GuideManager" data-dojo-id="guide"
-		 data-dojo-props="targets: [ 'one', 'two', 'three', 'four' ]">
-		<div>This is the first thing.</div>
-		<div data-dojo-props="actions: [ 'next' ]">This is the next thing.</div>
-		<div>Then this thing over here.</div>
-		<div>Have a banana.</div>
+	<div data-dojo-type="guide/GuideManager" data-dojo-id="guide">
+		<div data-dojo-props="target: 'one'">This is the first thing.</div>
+		<div data-dojo-props="target: 'two', actions: [ 'next' ]">This is the next thing.</div>
+		<div data-dojo-props="target: 'three'">Then this thing over here.</div>
+		<div data-dojo-props="target: 'four'">Have a banana.</div>
 	</div>
 </body>
 </html>

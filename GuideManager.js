@@ -11,14 +11,15 @@ define([
 	"dojo/dom-style",
 	"dojo/dom",
 	"dojo/window",
+	"dojo/Evented",
 	"dojo/_base/json",
 	"dojo/query",
 	"dijit/popup",
 	"./GuidePopupDialog"
 ], function (declare, array, lang, winBase, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
-	json, query, popup, GuidePopupDialog) {
+	Evented, json, query, popup, GuidePopupDialog) {
 	
-	return declare(null, {
+	return declare(Evented, {
 	// summary:
 	//		A manager for on-screen guides, to indicate information about specific
 	//		GUI elements to the user by popping up a sequence of informational tooltips.
@@ -94,26 +95,28 @@ define([
 				self.targets = [];
 				array.forEach(this.steps, function (stepInfo) {
 					// Create a div for this step and stash it under our domNode
-					self._stepNodes.push(domConstruct.create('div', {
+					stepInfo.node = domConstruct.create('div', {
 						innerHTML: stepInfo.html
-					}, self.stepContainerNode, 'last'));
-					// Remember the target id in a handy array
-					self.targets.push(typeof stepInfo.target === 'string' ? dom.byId(stepInfo.target) : stepInfo.target);
+					}, self.stepContainerNode, 'last');
+					stepInfo.target = typeof stepInfo.target === 'string' ? dom.byId(stepInfo.target) : stepInfo.target;
+					stepInfo.orientation = stepInfo.orientation || self._defaultOrientation;
 				});
 			} else {
 				/* Presume we are initialising from markup. */
 
 				// Go through this.targets and pick up each step element.
 				// These must correspond with the 'ids' array we were constructed with.
-				self._stepNodes = [];
+				self.steps = [];
 				query('>', this.domNode).forEach(function (node) {
-					self._stepNodes.push(node);
+					var propsStr = domAttr.get(node, 'data-dojo-props'),
+						props = (propsStr && propsStr.length > 0) ? json.fromJson("{" + propsStr + "}") : {};
+					self.steps.push({
+						node: node,
+						target: props.target,
+						orientation: props.orientation || self._defaultOrientation,
+						actions: props.actions
+					});
 				});
-				
-				if (self._stepNodes.length !== self.targets.length) {
-					console.error("Number of stepNodes " + self._stepNodes.length +
-						" must equal number of targetIds " + self.targetIds.length + "!");
-				}
 			}
 		},
 		
@@ -148,12 +151,10 @@ define([
 			}
 
 			// Move any current popup contents out, because we're about to destroy the popup.
-			var curChildren = this._popup.getChildren();
-			if (curChildren && curChildren.length > 0) {
-				array.forEach(curChildren, function (node) {
-					domConstruct.place(node, this.domNode, 'last');
-				});
-			}
+			var self = this;
+			array.forEach(this.steps, function (step) {
+				domConstruct.place(step.node, self.domNode, 'last');
+			});
 
 			// Destroy our on screen presence so we don't consume resources while inactive.
 			domConstruct.destroy(this._underlay);
@@ -170,7 +171,7 @@ define([
 		// target node.
 		showCurrent: function () {
 			// Hide all steps except the current one
-			for (var i = 0 ; i < this._stepNodes.length ; i ++) {
+			for (var i = 0 ; i < this.steps.length ; i ++) {
 				if (i === this._guideNum) {
 //					// If the popup has an addChild function, use it, otherwise
 //					//  just plonk the current step in its containerNode
@@ -179,47 +180,44 @@ define([
 //					} else {
 //						domConstruct.place(this._stepNodes[i], this._popup.containerNode);
 //					}
-					domConstruct.place(this._stepNodes[i], this._popup.stepContainerNode);
+					domConstruct.place(this.steps[i].node, this._popup.stepContainerNode);
 				} else {
 //					// If the popup has a removeChild function, use it.
 //					if (this._popup.removeChild) {
 //						this.popup.removeChild(this._stepNodes[i]);
 //					}
 					// Now ensure the step content has been moved
-					domConstruct.place(this._stepNodes[i], this.domNode);
+					domConstruct.place(this.steps[i].node, this.domNode);
 				}
 			}
 			
 			// Align the popup over the current target element
-			var target = dom.byId(this.targets[this._guideNum]);
-			if (target) {
-				var stepNode = this._stepNodes[this._guideNum],
-					propsStr = domAttr.get(stepNode, 'data-dojo-props'),
-					props = (propsStr && propsStr.length > 0) ? json.fromJson("{" + propsStr + "}") : {},
-					orientation = (props && props.orientation) ? props.orientation : this._defaultOrientation,
-					actions = (props && props.actions) ? props.actions :
+			// var target = dom.byId(this.targets[this._guideNum]);
+			var step = this.steps[this._guideNum],
+				stepNode = step.node,
+				target = dom.byId(step.target);
+			if (stepNode && target) {
+				var lastOne = this._guideNum === (this.steps.length - 1),
+					actions = step.actions ||
 						/* Sensible default actions */
-						(this._guideNum === 0) ? [ 'next' ] :
-						(this._guideNum === (this._stepNodes.length - 1)) ? [ 'ok' ] :
-						[ 'prev', 'next' ];
-//				if (actions) {
-//					actions = json.parse(actions);
-//				} else {
-//					actions = ;
-//				}
-				this._popup.displayActions(actions);
+						((this._guideNum === 0) ? [ 'next' ] :
+						(lastOne ? [ 'ok' ] :
+						[ 'prev', 'next' ]));
+				this._popup.displayActions(actions, lastOne);
 				popup.open({
 					popup: this._popup,
-					around: target,
-					orient: orientation
+					around: step.target,
+					orient: step.orientation
 				});
+				this.emit('guideShown', step);
 			}
 		},
 		act: function (action) {
 			console.log("Action " + action + " was clicked");
+			this.emit('actionClicked', action);
 			switch (action) {
 			case 'next':
-				if (this._guideNum === (this._stepNodes.length - 1)) {
+				if (this._guideNum === (this.steps.length - 1)) {
 					console.error("Already on last step, cannot go next.");
 					return;
 				}
@@ -229,7 +227,7 @@ define([
 				
 			case 'prev':
 				if (this._guideNum === 0) {
-					console.error("Already on first step, cannot go next.");
+					console.error("Already on first step, cannot go prev.");
 					return;
 				}
 				this._guideNum --;

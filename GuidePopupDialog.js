@@ -12,16 +12,19 @@ define([
 	"dojo/on",
 	"dojo/query",
 	"dijit/popup",
-	"dijit/TooltipDialog"
-], function (declare, array, lang, win,	domAttr, domClass, domConstruct, domStyle, dom, on, query, popup, TooltipDialog) {
+	"dijit/TooltipDialog",
+	"dojo/i18n!guide/nls/GuideManager.js"
+], function (declare, array, lang, win,	domAttr, domClass, domConstruct, domStyle, dom, on, query, popup, TooltipDialog, i18n) {
 	
 	return declare(TooltipDialog, {
-		
+		baseClass: "dojoxGuideTooltipDialog",
+		// Default actions available.
+		// NB 'action' must be unique.
 		actions: [
-			{ label: 'Prev', action: 'prev' },
-			{ label: 'Next', action: 'next' },
-			{ label: 'OK', action: 'ok' },
-			{ label: 'Cancel', action: 'cancel' }
+			{ label: i18n.prev, action: 'prev' },
+			{ label: i18n.next, action: 'next' },
+			{ label: i18n.ok, action: 'ok' },
+			{ label: i18n.cancel, action: 'cancel' }
 		],
 	
 		postCreate: function () {
@@ -43,29 +46,40 @@ define([
 			this.actionNode = [];
 			array.forEach(this.actions, lang.hitch(this, function (action) {
 				
-				var actNode = domConstruct.create('span', {
-					'class': 'dojoxGuideAction',
-					innerHTML: action.label,
-					'data-action': action.action
-				}, this.buttonBar, 'last');
+				var actNode = this.createActionButton(action);
+				domConstruct.place(actNode, this.buttonBar, 'last');
 
 				// handle click on the action, e.g. 'prev' calls this.prev()
-				this.own(actNode, on(actNode, 'click', lang.hitch(this, function (e) {
+				this.own(actNode, on(actNode, 'click', lang.hitch(this, function () {
 					// Tell the parent that an action was clicked.
-					this.parent.act(e.target.getAttribute('data-action'));
+					this.parent.act(action.action);
 				})));
-				
+
 				// remember node for later just in case
 				this.actionNode[action.action] = actNode;
 			}));
 		},
+		// Default creator - can be overridden
+		createActionButton: function (action) {
+			return domConstruct.create('span', {
+				'class': 'dojoxGuideAction',
+				innerHTML: action.label
+			});
+		},
 		// Makes actions visible or invisible
 		// e.g. this.set('actions', [ 'prev', 'next'])
-		displayActions: function (requiredActions) {
+		displayActions: function (requiredActions, lastOne) {
 			array.forEach(this.actions, lang.hitch(this, function (action) {
 
+				var display = (requiredActions.indexOf(action.action) !== -1);
+				if (lastOne && action.notIfLast) {
+					display = false;
+				}
+				if (lastOne && action.alwaysIfLast) {
+					display = true;
+				}
 				domStyle.set(this.actionNode[action.action], 'display',
-					(requiredActions.indexOf(action.action) !== -1) ? 'inline-block':'none');
+					display ? 'inline-block':'none');
 
 			}));
 		},

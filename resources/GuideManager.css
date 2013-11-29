@@ -1,13 +1,18 @@
 .dojoxGuideManager {
 	display: none;
 }
-.dijitTooltipDialog.dojoxGuidePopup {
+.dijitTooltipDialog.dojoxGuideTooltipDialogPopup {
 	outline: none;
-	z-index: 2000;
 }
 .dojoxGuideUnderlay {
-	opacity: 50%;
-	z-index: 1999;
+	opacity: 0.3;
+	z-index: 999;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: grey;
 }
 .dojoxGuidePopup .dojoxGuideStepContainer {
 }
