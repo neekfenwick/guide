@@ -13,7 +13,7 @@ define([
 	"dojo/query",
 	"dijit/popup",
 	"dijit/TooltipDialog",
-	"dojo/i18n!guide/nls/GuideManager.js"
+	"dojo/i18n!./nls/GuideManager"
 ], function (declare, array, lang, win,	domAttr, domClass, domConstruct, domStyle, dom, on, query, popup, TooltipDialog, i18n) {
 	
 	return declare(TooltipDialog, {
