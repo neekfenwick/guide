@@ -4,6 +4,7 @@ define([
 	"dojo/_base/array",
 	"dojo/_base/lang",
 	"dojo/_base/window",
+	'dojo/_base/kernel',
 	"dojo/dom-attr",
 	"dojo/dom-class",
 	"dojo/dom-construct",
@@ -15,9 +16,10 @@ define([
 	"dojo/_base/json",
 	"dojo/query",
 	"dijit/popup",
-	"./GuidePopupDialog"
-], function (declare, array, lang, winBase, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
-	Evented, json, query, popup, GuidePopupDialog) {
+	"./GuideTooltipDialog",
+	'./GuideDialog'
+], function (declare, array, lang, winBase, kern, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
+	Evented, json, query, popup, GuideTooltipDialog, GuideDialog) {
 	
 	return declare(Evented, {
 	// summary:
@@ -60,7 +62,8 @@ define([
 		
 		_defaultOrientation: [ 'before-centered', 'after-centered', 'below-centered', 'above-centered' ],
 		
-		_PopupClass: GuidePopupDialog,
+		_PopupTooltipDialogClass: GuideTooltipDialog,
+		_PopupDialogClass: GuideDialog,
 		
 		constructor: function (/*Object*/params, /*DomNode|string*/node) {
 			lang.mixin(this, params);
@@ -135,11 +138,16 @@ define([
 			this._underlay = domConstruct.create('div', {
 				'class': 'dojoxGuideUnderlay'
 			}, winBase.body(), 'last');
-			this._popup = new this._PopupClass({
+			this._popup = new this._PopupTooltipDialogClass({
+				'class': 'dojoxGuidePopup',
+				parent: this
+			});
+			this._dialog = new this._PopupDialogClass({
 				'class': 'dojoxGuidePopup',
 				parent: this
 			});
 			this._popup.startup();
+			this._dialog.startup();
 			
 			domGeom.position(this._underlay, win.getBox);
 			
@@ -161,6 +169,8 @@ define([
 			delete this._underlay;
 			this._popup.destroy();
 			delete this._popup;
+			this._dialog.destroy();
+			delete this._dialog;
 			
 			this._active = false;
 		},
@@ -172,44 +182,59 @@ define([
 		showCurrent: function () {
 			// Hide all steps except the current one
 			for (var i = 0 ; i < this.steps.length ; i ++) {
-				if (i === this._guideNum) {
-//					// If the popup has an addChild function, use it, otherwise
-//					//  just plonk the current step in its containerNode
-//					if (this._popup.addChild) {
-//						this.popup.addChild(this._stepNodes[i]);
-//					} else {
-//						domConstruct.place(this._stepNodes[i], this._popup.containerNode);
-//					}
-					domConstruct.place(this.steps[i].node, this._popup.stepContainerNode);
-				} else {
-//					// If the popup has a removeChild function, use it.
-//					if (this._popup.removeChild) {
-//						this.popup.removeChild(this._stepNodes[i]);
-//					}
-					// Now ensure the step content has been moved
-					domConstruct.place(this.steps[i].node, this.domNode);
-				}
+				domConstruct.place(this.steps[i].node, this.domNode);
 			}
-			
-			// Align the popup over the current target element
-			// var target = dom.byId(this.targets[this._guideNum]);
-			var step = this.steps[this._guideNum],
-				stepNode = step.node,
-				target = dom.byId(step.target);
-			if (stepNode && target) {
-				var lastOne = this._guideNum === (this.steps.length - 1),
+
+			var self = this,
+				step = this.steps[this._guideNum];
+
+			function showStep(step) {
+				// Align the popup over the current target element
+				// var target = dom.byId(self.targets[self._guideNum]);
+				var stepNode = step.node,
+					target = dom.byId(step.target);
+				var lastOne = self._guideNum === (self.steps.length - 1),
 					actions = step.actions ||
 						/* Sensible default actions */
-						((this._guideNum === 0) ? [ 'next' ] :
+						((self._guideNum === 0) ? [ 'next' ] :
 						(lastOne ? [ 'ok' ] :
 						[ 'prev', 'next' ]));
-				this._popup.displayActions(actions, lastOne);
-				popup.open({
-					popup: this._popup,
-					around: step.target,
-					orient: step.orientation
-				});
-				this.emit('guideShown', step);
+
+				if (step.type && step.type === 'dialog') {
+					domConstruct.place(stepNode, self._dialog.stepContainerNode);
+					self._dialog.set('title', step.title);
+					self._dialog.displayActions(actions, lastOne);
+					self._dialog.show();
+					if (self._popup._isShown()) {
+						popup.hide(self._popup);
+					}
+					// thisPopup = this._dialog;
+				} else {
+					// thisPopup = this._popup;
+					if (stepNode && target) {
+						domConstruct.place(stepNode, self._popup.stepContainerNode);
+						self._popup.displayActions(actions, lastOne);
+						win.scrollIntoView(step.target);
+						popup.open({
+							popup: self._popup,
+							around: step.target,
+							orient: step.orientation
+						});
+						if (self._dialog._isShown()) {
+							self._dialog.hide();
+						}
+					}
+				}
+				self.emit('guideShown', step);
+			}
+
+			// If the step has a before, execute that and wait on its promise
+			//  before showing.
+			if (step.before) {
+				var def = step.before.call(step.context || kern.global, step);
+				def.then(showStep);
+			} else {
+				showStep(step);
 			}
 		},
 		act: function (action) {

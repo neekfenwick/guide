@@ -6,7 +6,7 @@
 }
 .dojoxGuideUnderlay {
 	opacity: 0.3;
-	z-index: 999;
+	z-index: 900;
 	position: absolute;
 	top: 0;
 	left: 0;

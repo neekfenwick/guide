@@ -16,8 +16,7 @@ define([
 	"dojo/i18n!./nls/GuideManager"
 ], function (declare, array, lang, win,	domAttr, domClass, domConstruct, domStyle, dom, on, query, popup, TooltipDialog, i18n) {
 	
-	return declare(TooltipDialog, {
-		baseClass: "dojoxGuideTooltipDialog",
+	return declare(null, {
 		// Default actions available.
 		// NB 'action' must be unique.
 		actions: [
