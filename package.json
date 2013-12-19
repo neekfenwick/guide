@@ -1,5 +1,6 @@
 {
   "name": "guide",
+  "version": "1.0.0",
   "mappings": {
     "dojo": "https://github.com/dojo/dojo",
     "dijit": "https://github.com/dojo/dijit"
