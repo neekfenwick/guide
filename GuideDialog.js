@@ -6,6 +6,12 @@ define([
 ], function (declare, Dialog, _GuidePopupMixin) {
 	
 	return declare([ Dialog, _GuidePopupMixin ], {
-		baseClass: "dojoxGuideDialog"
+		baseClass: "dojoxGuideDialog",
+		closeAction: 'close',
+
+		onCancel: function () {
+			// Handle the 'x' button being clicked.
+			this.parent.act(this.closeAction);
+		}
 	});
 });
