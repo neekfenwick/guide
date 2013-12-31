@@ -204,16 +204,16 @@ define([
 					domConstruct.place(stepNode, self._dialog.stepContainerNode);
 					self._dialog.set('title', step.title);
 					self._dialog.displayActions(actions, lastOne);
+					self._dialog.domNode.setAttribute('data-step-id', step.id);
 					self._dialog.show();
 					if (self._popup._isShown()) {
 						popup.hide(self._popup);
 					}
-					// thisPopup = this._dialog;
 				} else {
-					// thisPopup = this._popup;
 					if (stepNode && target) {
 						domConstruct.place(stepNode, self._popup.stepContainerNode);
 						self._popup.displayActions(actions, lastOne);
+						self._popup.domNode.setAttribute('data-step-id', step.id);
 						win.scrollIntoView(step.target);
 						popup.open({
 							popup: self._popup,
