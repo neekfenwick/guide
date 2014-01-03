@@ -70,7 +70,7 @@ define([
 		displayActions: function (requiredActions, lastOne) {
 			array.forEach(this.actions, lang.hitch(this, function (action) {
 
-				var display = (requiredActions.indexOf(action.action) !== -1);
+				var display = (array.indexOf(requiredActions, action.action) !== -1);
 				if (lastOne && action.notIfLast) {
 					display = false;
 				}
