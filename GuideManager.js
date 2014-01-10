@@ -97,6 +97,8 @@ define([
 				self._stepNodes = [];
 				self.targets = [];
 				array.forEach(this.steps, function (stepInfo) {
+					// Throw away any node we had before
+					stepInfo.node && domConstruct.destroy(stepInfo.node);
 					// Create a div for this step and stash it under our domNode
 					stepInfo.node = domConstruct.create('div', {
 						innerHTML: stepInfo.html
