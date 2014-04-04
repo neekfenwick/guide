@@ -216,6 +216,10 @@ define([
 						domConstruct.place(stepNode, self._popup.stepContainerNode);
 						self._popup.displayActions(actions, lastOne);
 						self._popup.domNode.setAttribute('data-step-id', step.id);
+						if (step.hasOwnProperty('ensureOnScreen')) {
+							// Scroll to every node identified by selector
+							query(step.ensureOnScreen).forEach(win.scrollIntoView);
+						}
 						win.scrollIntoView(step.target);
 						popup.open({
 							popup: self._popup,
