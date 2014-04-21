@@ -16,10 +16,11 @@ define([
 	"dojo/_base/json",
 	"dojo/query",
 	"dijit/popup",
+	"dijit/registry",
 	"./GuideTooltipDialog",
 	'./GuideDialog'
 ], function (declare, array, lang, winBase, kern, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
-	Evented, json, query, popup, GuideTooltipDialog, GuideDialog) {
+	Evented, json, query, popup, registry, GuideTooltipDialog, GuideDialog) {
 	
 	return declare(Evented, {
 	// summary:
@@ -221,10 +222,24 @@ define([
 							query(step.ensureOnScreen).forEach(win.scrollIntoView);
 						}
 						win.scrollIntoView(step.target);
+						var parent;
+						if (step.parentLookup) {
+							// We have been asked to anchor our guide popup around an existing parent popup
+							// (to not do this would cause the popup mechanism to close existing popups
+							// before showing the guide.)
+							parent = step.target.parentNode;
+							while (parent && !domClass.contains(parent, 'dijitPopup')) {
+								parent = parent.parentNode;
+							}
+							// dijitPopup node contains the actual popup widget
+							parent = parent ? registry.byNode(parent.childNodes[0]) : undefined;
+							console.log('Loooking up parent, came up with: ', parent);
+						}
 						popup.open({
 							popup: self._popup,
 							around: step.target,
-							orient: step.orientation
+							orient: step.orientation,
+							parent: parent
 						});
 						if (self._dialog._isShown()) {
 							self._dialog.hide();
