@@ -6,6 +6,7 @@ define([
 	"dojo/_base/window",
 	'dojo/_base/kernel',
 	"dojo/dom-attr",
+	"dojo/dom-class",
 	"dojo/dom-construct",
 	"dojo/dom-geometry",
 	"dojo/dom-style",
