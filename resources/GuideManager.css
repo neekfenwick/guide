@@ -33,3 +33,58 @@
 .dojoxGuidePopup .dojoxGuideButtonBar .dojoxGuideAction:hover {
 	text-decoration: underline;
 }
+
+.guideTarget {
+        padding: 10px;
+        background: palegoldenrod;
+        border: 2px solid black;
+        max-width: 10em;
+}
+.dojoxGuideTrainingModeNotifier{
+        position: fixed;
+        z-index: 1000;
+        text-align: center;
+        top: 5px;
+        left: 0;
+        right: 0;
+        height: 0;
+}
+.dojoxGuideTrainingModeContent{
+        display: inline-block;
+        background-color: yellow;
+        -webkit-border-radius: 39px;
+        -moz-border-radius: 39px;
+        border-radius: 39px;
+}
+.dojoxGuideHighlighter {
+        position: absolute;
+        background-color: yellow;
+}
+.dojoxGuideHighlighter.dojoxGuideHighlight-top {
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        z-index: 10;
+}
+.dojoxGuideHighlighter.dojoxGuideHighlight-right {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 3px;
+        z-index: 10;
+}
+.dojoxGuideHighlighter.dojoxGuideHighlight-bottom {
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        z-index: 10;
+}
+.dojoxGuideHighlighter.dojoxGuideHighlight-left {
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 3px;
+        z-index: 10;
+}

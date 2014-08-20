@@ -8,13 +8,7 @@
 		@import "../../util/doh/robot/robot.css";
 		@import "../resources/GuideManager.css";
 		/*@import "../css/dijitTests.css";*/
-		
-		.guideTarget {
-			padding: 10px;
-			background: palegoldenrod;
-			border: 2px solid black;
-			max-width: 10em;
-		}
+				
 	</style>
 
 	<!-- required: the default dijit theme: -->
@@ -37,32 +31,44 @@
 		], function(dom, on, parser, GuideManager) {
 			parser.parse();
 
-			function startMarkup() {
-				guide.start();
-			}
-			var startProg = function() {
-				var g = new GuideManager({
+			var g = new GuideManager({
 					steps: [
 						{ html: 'I am the first step', target: 'one' },
 						{ html: 'I am the second step', target: dom.byId('two') },
 						{ html: 'I am the third step', target: 'three' },
 						{ html: 'I am the fourth step', target: dom.byId('four') },
+						{ html: 'I am the fifth step', target: dom.byId('onex') }
 					]
-				})
-				g.startup();
-				
-				g.start();
+				});
+
+			function startMarkup() {
+				guide.start();
 			}
+			var startProg = function() {
+				g.startup();
+				g.start();
+			};
+			
 			on(dom.byId('startMarkup'), 'click', startMarkup);
 			on(dom.byId('startProg'), 'click', startProg);
-		})
+			on(dom.byId('trainingMode'), 'click', function(){
+				g.trainingMode(true);
+			});
+			
+//			function check(t){
+//				console.log(t);
+//			};
+		});
 
 	</script>
 </head>
 <body class="claro">
 
+	
+	<div class="guideTarget" id="onex" >Something here</div>
 	<button id="startMarkup">Start the guide from markup!</button>
 	<button id="startProg">Start the guide created programatically!</button>
+	<button id="trainingMode">Enable training Mode</button>
 
 	<h1>A big heading at the top</h1>
 	<div class="guideTarget" id="one">Something here</div>
@@ -81,6 +87,7 @@
 		<div data-dojo-props="target: 'two', actions: [ 'next' ]">This is the next thing.</div>
 		<div data-dojo-props="target: 'three'">Then this thing over here.</div>
 		<div data-dojo-props="target: 'four'">Have a banana.</div>
+		<div data-dojo-props="target: 'onex'">bye. Have  fun.</div>
 	</div>
 </body>
 </html>

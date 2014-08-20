@@ -6,23 +6,27 @@ define([
 	"dojo/_base/window",
 	'dojo/_base/kernel',
 	"dojo/dom-attr",
-	"dojo/dom-class",
 	"dojo/dom-construct",
 	"dojo/dom-geometry",
 	"dojo/dom-style",
 	"dojo/dom",
 	"dojo/window",
 	"dojo/Evented",
+	"dojo/Stateful",
 	"dojo/_base/json",
 	"dojo/query",
 	"dijit/popup",
+	"dojo/mouse",
+	"dojo/on",
+	"put-selector/put",
 	"dijit/registry",
 	"./GuideTooltipDialog",
-	'./GuideDialog'
+	'./GuideDialog',
+	'dojo/text!./templates/notifier.html'
 ], function (declare, array, lang, winBase, kern, domAttr, domClass, domConstruct, domGeom, domStyle, dom, win,
-	Evented, json, query, popup, registry, GuideTooltipDialog, GuideDialog) {
+	Evented, Stateful, json, query, popup, mouse, on, put, registry, GuideTooltipDialog, GuideDialog, trainingModeTemplate) {
 	
-	return declare(Evented, {
+	return declare([ Stateful, Evented ], {
 	// summary:
 	//		A manager for on-screen guides, to indicate information about specific
 	//		GUI elements to the user by popping up a sequence of informational tooltips.
@@ -66,6 +70,10 @@ define([
 		_PopupTooltipDialogClass: GuideTooltipDialog,
 		_PopupDialogClass: GuideDialog,
 		
+		_trainingMode: false,
+		_trainingNotifier: undefined,
+
+		
 		constructor: function (/*Object*/params, /*DomNode|string*/node) {
 			lang.mixin(this, params);
 			// If we were created from markup or programatically with a node, we
@@ -82,8 +90,97 @@ define([
 			domStyle.set(this.domNode, 'display', 'none');
 		},
 
+		startTrainingMode: function(){
+			this._initSteps();
+			this._enableTrainingMode();
+		},
+		
+		/*
+		 * Turns On training Mode
+		 * 1- Adds highlighter to Guide elements
+		 * 2- Adds a notifier 
+		 */ 
+		_enableTrainingMode: function(){
+			
+			this._trainingMode = true;
+			
+			var _self = this;
+
+			array.forEach(this.steps, function (stepInfo) {
+				var refNode = stepInfo.target;
+				// We may be being run a second time for new on-screen content.
+				// Create highlight if not already created.
+				if (!stepInfo.highlight) {
+					stepInfo.highlight = {
+						nodes: [
+							domConstruct.create("div", {"class":"dojoxGuideHighlighter dojoxGuideHighlight-top"}, refNode, 'first'),
+							domConstruct.create("div", {"class":"dojoxGuideHighlighter dojoxGuideHighlight-right"}, refNode, 'first'),
+							domConstruct.create("div", {"class":"dojoxGuideHighlighter dojoxGuideHighlight-bottom"}, refNode, 'first'),
+							domConstruct.create("div", {"class":"dojoxGuideHighlighter dojoxGuideHighlight-left"}, refNode, 'first')
+						],
+						// attach handler to show guide popup
+						mouseOverHandle: on(stepInfo.target, mouse.enter, lang.partial(function (stepInfo/*, event*/) {
+							for (var guideNum = 0 ; guideNum < _self.steps.length ; guideNum ++) {
+								if (_self.steps[guideNum] === stepInfo) {
+									_self._guideNum = guideNum; //domAttr.get(this, "data-guide-id");
+									_self.makeActive(false);
+									_self.showCurrent();
+								}
+							}
+						}, stepInfo))
+					};
+					// make sure the target has position:relative
+					domStyle.set(refNode, 'position', 'relative');
+				}
+			});
+
+			// attach handler to hide guide popup
+			on(document, "click", function (/*event*/) {
+				if(_self._trainingMode){
+					_self.makeInactive();
+				}
+			});
+			
+			// show Training Notifier (there is a single notifier for all modules)
+			if(this._trainingNotifier === undefined){
+				this._trainingNotifier = domConstruct.place(trainingModeTemplate, winBase.body(), 'first');
+				query('a', this._trainingNotifier).on('click', function (event){
+					event.preventDefault();
+					_self._disableTrainingMode();
+				});
+			}
+		},
+		
+		_removeHighlight: function (stepInfo) {
+			if (stepInfo.highlight) {
+				array.forEach(stepInfo.highlight.nodes, domConstruct.destroy);
+				stepInfo.highlight.mouseOverHandle.remove();
+				delete stepInfo.highlight;
+			}
+		},
+
+		_disableTrainingMode: function(){
+			this._trainingMode = false;
+			// query(".highlighter").forEach(domConstruct.destroy);
+			array.forEach(this.steps, lang.hitch(this, function (stepInfo) {
+				this._removeHighlight(stepInfo);
+			}));
+			domConstruct.destroy(this._trainingNotifier);
+			this._trainingNotifier = undefined;
+			this.makeInactive();
+		},
+
 		startup: function () {
 			this._initSteps();
+		},
+
+		_stepsSetter: function (steps) {
+			// Old steps may have highlight nodes that need cleaning up
+			array.forEach(this.steps, lang.hitch(this, function (step) {
+				this._removeHighlight(step);
+			}));
+
+			this.steps = steps;
 		},
 
 		_initSteps: function () {
@@ -128,19 +225,24 @@ define([
 		
 		start: function () {
 			this._guideNum = 0;
-			this.makeActive();
+			this.makeActive(true);
 			
 			this.showCurrent();
 		},
-		makeActive: function () {
+		makeActive: function (showUnderlay) {
 			if (this._active) {
 				return;
 			}
 			
-			// Create an underlay div we will use when necessary
-			this._underlay = domConstruct.create('div', {
-				'class': 'dojoxGuideUnderlay'
-			}, winBase.body(), 'last');
+			if (showUnderlay === true) {
+				// Create an underlay div we will use when necessary
+				this._underlay = domConstruct.create('div', {
+					'class': 'dojoxGuideUnderlay'
+				}, winBase.body(), 'last');
+
+				domGeom.position(this._underlay, win.getBox);
+			}
+
 			this._popup = new this._PopupTooltipDialogClass({
 				'class': 'dojoxGuidePopup',
 				parent: this
@@ -151,8 +253,6 @@ define([
 			});
 			this._popup.startup();
 			this._dialog.startup();
-			
-			domGeom.position(this._underlay, win.getBox);
 			
 			this._active = true;
 		},
@@ -192,6 +292,7 @@ define([
 				step = this.steps[this._guideNum];
 
 			function showStep(step) {
+				/*jshint maxcomplexity: 13 */
 				// Align the popup over the current target element
 				// var target = dom.byId(self.targets[self._guideNum]);
 				var stepNode = step.node,
@@ -203,24 +304,28 @@ define([
 						(lastOne ? [ 'ok' ] :
 						[ 'prev', 'next' ]));
 
+				var refButtonBar;
 				if (step.type && step.type === 'dialog') {
 					domConstruct.place(stepNode, self._dialog.stepContainerNode);
 					self._dialog.set('title', step.title);
 					self._dialog.displayActions(actions, lastOne);
 					self._dialog.domNode.setAttribute('data-step-id', step.id);
+					refButtonBar = self._dialog.domNode;
 					self._dialog.show();
 					if (self._popup._isShown()) {
 						popup.hide(self._popup);
-					}
+					}					
 				} else {
 					if (stepNode && target) {
 						domConstruct.place(stepNode, self._popup.stepContainerNode);
 						self._popup.displayActions(actions, lastOne);
 						self._popup.domNode.setAttribute('data-step-id', step.id);
+
 						if (step.hasOwnProperty('ensureOnScreen')) {
 							// Scroll to every node identified by selector
 							query(step.ensureOnScreen).forEach(win.scrollIntoView);
 						}
+						refButtonBar = self._popup.buttonBar;
 						win.scrollIntoView(step.target);
 						var parent;
 						if (step.parentLookup) {
@@ -246,6 +351,11 @@ define([
 						}
 					}
 				}
+				// Hide action bar if we are in training mode
+				if (self._trainingMode) {
+					domStyle.set(refButtonBar, 'display', 'none');
+				}
+
 				self.emit('guideShown', step);
 			}
 
