@@ -49,7 +49,7 @@ define([
 				domConstruct.place(actNode, this.buttonBar, 'last');
 
 				// handle click on the action, e.g. 'prev' calls this.prev()
-				this.own(actNode, on(actNode, 'click', lang.hitch(this, function () {
+				this.own(on(actNode, 'click', lang.hitch(this, function () {
 					// Tell the parent that an action was clicked.
 					this.parent.act(action.action);
 				})));
