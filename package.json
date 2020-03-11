@@ -1,6 +1,6 @@
 {
   "name": "guide",
-  "version": "1.0.3",
+  "version": "1.0.10",
   "mappings": {
     "dojo": "https://github.com/dojo/dojo",
     "dijit": "https://github.com/dojo/dijit"
@@ -15,8 +15,8 @@
   "keywords": ["Guide"],
   "homepage": "http://github.com/neekfenwick/guide",
   "dependencies": {
-    "dojo": "1.7.0",
-    "dijit": "1.7.0"
+    "dojo": "1.16.2",
+    "dijit": "1.16.2"
   },
   "main": "./guide",
   "icon": "https://raw.github.com/neekfenwick/guide/master/resources/logo.png"
