@@ -16,7 +16,7 @@
   "homepage": "http://github.com/neekfenwick/guide",
   "dependencies": {
     "dojo": "1.16.2",
-    "dijit": "1.16.2"
+    "dijit": "1.16.3"
   },
   "main": "./guide",
   "icon": "https://raw.github.com/neekfenwick/guide/master/resources/logo.png"
